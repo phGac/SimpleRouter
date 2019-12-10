@@ -45,10 +45,11 @@ class Router {
         return $this->dispatcher->dispatch($this->collector);
     }
 
-    public static function view(string $viewName) : void
+    public static function view(string $viewName, array $params = []) : void
     {
         if(self::$view_folder == '')
             throw new \Exception("View folder has not set. Use 'setView' method to fix");
+        extract($params);
         require self::$view_folder.'/'.$viewName.'.php';
     }
 

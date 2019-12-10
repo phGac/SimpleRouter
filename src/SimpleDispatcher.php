@@ -34,7 +34,7 @@ class SimpleDispatcher implements Dispatcher {
                     return [
                         'status' => self::FOUND,
                         'method' => $method,
-                        'params' => null,
+                        'params' => [],
                         'handler' => $handler
                     ];
                 }
