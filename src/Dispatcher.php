@@ -7,5 +7,5 @@ interface Dispatcher {
     public const FOUND = 1;
     public const METHOD_NOT_ALLOWED = 2;
 
-    public function dispatch() : array;
+    public function dispatch(RouterCollector $collector) : array;
 }

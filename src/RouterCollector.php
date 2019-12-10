@@ -3,6 +3,7 @@
 namespace SimpleRouter;
 
 use \Closure;
+use SimpleRouter\Router;
 
 class RouterCollector {
     
@@ -40,10 +41,10 @@ class RouterCollector {
         }
     }
 
-    public function addGroup(string $prefix, Closure $closure) : void 
+    public function addGroup(string $prefix, Closure $closure, Router $router) : void 
     {
         $this->prefix = $prefix;
-        $closure($this);
+        $closure($router);
         $this->prefix = "";
     }
 

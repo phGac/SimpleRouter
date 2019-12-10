@@ -8,18 +8,7 @@ use SimpleRouter\Dispatcher;
 
 class SimpleDispatcher implements Dispatcher {
 
-    private $collector;
-
-    public function __construct(RouterCollector $collector){
-        $this->collector = $collector;
-    }
-
-    public function collector() : RouterCollector
-    {
-        return $this->collector;
-    }
-
-    public function dispatch() : array
+    public function dispatch(RouterCollector $collector) : array
     {
         $httpMethod = $_SERVER['REQUEST_METHOD'];
         $uri = $_SERVER['REQUEST_URI'];
@@ -32,13 +21,13 @@ class SimpleDispatcher implements Dispatcher {
         
         $uri = rawurldecode($uri);
         
-        return $this->solveUri($httpMethod, $uri);
+        return $this->solveUri($httpMethod, $uri, $collector);
     }
 
-    private function solveUri(string $method, string $uri) : array
+    private function solveUri(string $method, string $uri, RouterCollector $collector) : array
     {
         // static route
-        $routes = $this->collector->staticRoutes();
+        $routes = $collector->staticRoutes();
         if(isset($routes[$method])){
             foreach($routes[$method] as $route => $handler){
                 if($route == $uri){
@@ -54,19 +43,28 @@ class SimpleDispatcher implements Dispatcher {
 
         // dinamic route // --->> algunos problemas
         $uri_split = explode('/', $uri);
-        $routes = $this->collector->dinamicRoutes();
+        $routes = $collector->dinamicRoutes();
         foreach ($routes as $route => $info) {
             if(preg_match($route, $uri, $matches) && ((\sizeof($matches)-2) == (\sizeof($uri_split)-1))){
                 if(isset($info[$method])){
                     $vars = array();
                     $i = 2;
-                    foreach ($info[$method][1] as $regexName => $regexValue) {
-                        if(! \is_numeric($regexName)){
-                            $vars[$regexName] = \substr($matches[$i], 1);
+                    if(! $info[$method][0] instanceof \Closure){
+                        foreach ($info[$method][1] as $regexName => $regexValue) {
+                            if(! \is_numeric($regexName)){
+                                $vars[$regexName] = \substr($matches[$i], 1);
+                            }
+                            $i++;
                         }
-                        $i++;
+                    } else {
+                        foreach ($info[$method][1] as $regexName => $regexValue) {
+                            if(! \is_numeric($regexName)){
+                                $vars[] = \substr($matches[$i], 1);
+                            }
+                            $i++;
+                        }
                     }
-
+                    
                     return [
                         'status' => self::FOUND,
                         'method' => $method,

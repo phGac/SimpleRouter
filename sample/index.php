@@ -5,27 +5,36 @@
  */
 require '../loader.php';
 
+use SimpleRouter\Router;
+
+
 $__init__ = microtime(true);
 
-$dispatcher = SimpleRouter\SimpleRouter::dispatcher( function(SimpleRouter\RouterCollector $router) {
-    $router->addRoute('GET', '/', 'Home::index');
-    $router->addRoute('GET', '/user', 'User::index');
-    $router->addRoute('GET', '/user/{id:\d+}', 'User::show');
-    $router->addRoute('POST', '/user/{id:\d+}/{firstName:.+}/{lastName:[a-zA-Z]+}', 'User::update');
+$router = new Router();
 
-    $router->addGroup('/prefix', function(SimpleRouter\RouterCollector $r){
-        $r->addRoute('GET', '/{post:[0-9]}/{test:[A-Za-z]}', function($post, $test){
-            echo "<br>POST:$post, TEST:$test";
-        });
+// set views folder
+$router->setView(__DIR__.'/views');
+
+$router->get('/', 'Home::index');
+$router->get('/user', 'User::index');
+$router->get('/user/{id:\d+}', 'User::show');
+$router->route('POST', '/user/{id:\d+}/{firstName:.+}/{lastName:[a-zA-Z]+}', 'User::update');
+
+$router->group('/prefix', function(Router $r){
+    $r->get('/{post:[0-9]+}/{test:[A-Za-z]+}', function($post, $test){
+        echo "<br>POST:$post, TEST:$test";
+    });
+    $r->get('/view', function(){
+        Router::view('view');
     });
 });
 
 
-$routeInfo = $dispatcher->dispatch();
+$routeInfo = $router->dispatch();
 $__finish__ = microtime(true);
 
 $__total__ = ($__finish__ - $__init__);
-echo "Time: $__total__ [init:$__init__, finish:$__finish__]";
+echo "Time: $__total__ [init:$__init__, finish:$__finish__]<br>";
 
 switch($routeInfo['status']){
     case SimpleRouter\Dispatcher::NOT_FOUND:
@@ -38,7 +47,7 @@ switch($routeInfo['status']){
         echo "ROUTE FOUND :D!";
 
         $handler = $routeInfo['handler'];
-        $params = $routeInfo['params'];
+        $params = $routeInfo['params'] ?? [];
 
         if($handler instanceof closure) {
             $handler( ...$params );
