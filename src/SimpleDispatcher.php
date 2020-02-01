@@ -8,10 +8,10 @@ use SimpleRouter\Dispatcher;
 
 class SimpleDispatcher implements Dispatcher {
 
-    public function dispatch(RouterCollector $collector) : array
+    public function dispatch(RouterCollector $collector, string $uri = null) : array
     {
         $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $uri = $_SERVER['REQUEST_URI'];
+        $uri = ($uri !== null) ? $uri : $_SERVER['REQUEST_URI'];
         if (false !== $pos = strpos($uri, '?')) {
             $uri = substr($uri, 0, $pos);
         }

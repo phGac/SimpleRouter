@@ -40,9 +40,9 @@ class Router {
         $this->collector->addRoute('PUT', $url, $handler);
     }
 
-    public function dispatch() : array
+    public function dispatch(string $uri = null) : array
     {
-        return $this->dispatcher->dispatch($this->collector);
+        return $this->dispatcher->dispatch($this->collector, $uri);
     }
 
     public static function view(string $viewName, array $params = []) : void
